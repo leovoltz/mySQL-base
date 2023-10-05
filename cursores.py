@@ -18,7 +18,7 @@ connection = pymysql.connect(
     password=os.environ['MYSQL_PASSWORD'],
     database=os.environ['MYSQL_DATABASE'],
     charset='utf8mb4',
-    cursorclass=pymysql.cursors.DictCursor,
+    cursorclass=pymysql.cursors.SSDictCursor,
 )
 
 with connection:
@@ -148,20 +148,19 @@ with connection:
             'WHERE id=%s'
         )
         cursor.execute(sql, ('Eleonor', 102, 4))
-        resultFromSelect = cursor.execute(f'SELECT * FROM {TABLE_NAME} ')
+        cursor.execute(f'SELECT * FROM {TABLE_NAME} ')
 
-        data6 = cursor.fetchall()
-
-        for row in data6:
+        # data6 = cursor.fetchall()
+        print()
+        print('For 1:')
+        for row in cursor.fetchall_unbuffered():
             print(row)
+            if row['id'] >= 5:
+                break
 
-        lastIdFromSelect = cursor.execute(
-            f'SELECT * FROM {TABLE_NAME} ORDER BY ID DESC LIMIT 1')
-
-        print('resultFromSelect', resultFromSelect)
-        print('len(data6)', len(data6))
-        print('rowcount', cursor.rowcount)
-        print('lastrowid', cursor.lastrowid)
-        print('lastrowid manual', lastIdFromSelect)
-
+        print()
+        print('For 2:')
+        # cursor.scroll(1, 'absolute')
+        for row in cursor.fetchall_unbuffered():
+            print(row)
     connection.commit()
